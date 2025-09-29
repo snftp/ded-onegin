@@ -1,0 +1,10 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     a.out
+relocations:
+  - { offset: 0x19, size: 0x8, addend: 0x0, symName: __Z9FillLinesPcP6line_tm, symObjAddr: 0x0, symBinAddr: 0x1000005B8, symSize: 0xB4 }
+  - { offset: 0x996, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x17C, symBinAddr: 0x100000734, symSize: 0x1E4 }
+  - { offset: 0xA3B, size: 0x8, addend: 0x0, symName: __Z13GetFileLengthPmP7__sFILE, symObjAddr: 0x134, symBinAddr: 0x1000006EC, symSize: 0x48 }
+  - { offset: 0xA7E, size: 0x8, addend: 0x0, symName: __Z27CountLinesReplaceBackspacesPcPm, symObjAddr: 0xB4, symBinAddr: 0x10000066C, symSize: 0x80 }
+  - { offset: 0xACA, size: 0x8, addend: 0x0, symName: __Z9FillLinesPcP6line_tm, symObjAddr: 0x0, symBinAddr: 0x1000005B8, symSize: 0xB4 }
+...
