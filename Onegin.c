@@ -5,7 +5,6 @@
 #include <string.h>
 
 void FillLines(char *text_buffer, line_t *lines, size_t lines_count) {
-
     char *pointer_on_symbol = text_buffer;
     char *new_beginning = text_buffer;
 
@@ -19,6 +18,7 @@ void FillLines(char *text_buffer, line_t *lines, size_t lines_count) {
 
 void CountLinesReplaceBackspaces(char *text_buffer, size_t *count) {
     char *pointer_on_symbol = text_buffer;
+
     while ((pointer_on_symbol = strchr(pointer_on_symbol, '\n')) != NULL) {
         (*count)++;
         *pointer_on_symbol = '\0';
@@ -32,27 +32,31 @@ void GetFileLength(size_t *file_size, FILE *file) {
     rewind(file);
 }
 
-int main() {
-
-// NOTE: turn struct text_t into thing created and destroyed with functions (like stack) so that main would be more user-friendly
-
-    FILE *onegin = fopen("Evgeniy_Onegin.txt", "r"); // NOTE: fclose()
+void ConstructText(text_t *text) {
+    FILE *onegin = fopen("Evgeniy_Onegin.txt", "r");
     assert(onegin != NULL);
-    size_t file_size = 0;
-    size_t lines_count = 0;
 
+    GetFileLength(&(text->text_size), onegin);
 
-    GetFileLength(&file_size, onegin);
+    text->text_buffer = (char*)calloc(text->text_size, sizeof(char)); // NOTE: free()
+    assert(text->text_buffer != NULL);
 
-    char *text_buffer = (char*)calloc(file_size, sizeof(char)); // NOTE: free()
-    assert(text_buffer != NULL);
-    assert(fread(text_buffer, 1, file_size, onegin) == file_size);
+    assert(fread(text->text_buffer, sizeof(char), text->text_size, onegin) == text->text_size);
 
-    CountLinesReplaceBackspaces(text_buffer, &lines_count);
+    CountLinesReplaceBackspaces(text->text_buffer, &(text->lines_count));
 
-    text_t text = { .lines = (line_t*)calloc(lines_count, sizeof(line_t)), .text_size = file_size}; // NOTE: free()
-    assert(text.lines != NULL);
+    text->lines = (line_t*)calloc(text->lines_count, sizeof(line_t)); // NOTE: free()
+    assert(text->lines != NULL);
 
-    FillLines(text_buffer, text.lines, lines_count);
+    FillLines(text->text_buffer, text->lines, text->lines_count);
+
+    fclose(onegin);
+}
+
+// void DestructText(text_t *text) {}
+
+int main() {
+    text_t text = { .lines = NULL, .lines_count = 0, .text_size = 0, .text_buffer = NULL};
+    ConstructText(&text);
     return 0;
 }
