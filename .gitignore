@@ -1,3 +1,6 @@
 a.out
 a.out.dSYM/Contents/Resources/DWARF/a.out
 a.out.dSYM/Contents/Resources/Relocations/aarch64/a.out.yml
+onegin
+onegin.dSYM/
+output.txt

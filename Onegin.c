@@ -4,9 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-//TODO названия сменить говно на читаемое
 
-void WriteBufferIntoOutputText(char *text_buffer, size_t lines_count, FILE *output) {
+void WriteText(char *text_buffer, size_t lines_count, FILE *output) {
     char *pointer_on_symbol = text_buffer;
     char *new_beginning = text_buffer;
 
@@ -19,7 +18,7 @@ void WriteBufferIntoOutputText(char *text_buffer, size_t lines_count, FILE *outp
     }
 }
 
-void WriteOutputText(line_t *lines, size_t lines_count, FILE *output) {
+void WritePointersArray(line_t *lines, size_t lines_count, FILE *output) {
     for (size_t i = 0; i < lines_count; i++) {
         assert(lines[i].begin != NULL);
         assert(lines[i].length > 0);
@@ -28,11 +27,11 @@ void WriteOutputText(line_t *lines, size_t lines_count, FILE *output) {
     }
 }
 
-int ReversedComparison(void *line_a, void *line_b) {
-    line_t *a = (line_t *)line_a;
-    line_t *b = (line_t *)line_b;
-
-    for (long line_a_index = (long)(a->length - 1), line_b_index = (long)(b->length - 1); line_a_index >= 0 && line_b_index >= 0; line_a_index--, line_b_index--) {
+int ReversedComparison(const void *line_a, const void *line_b) {
+    const line_t *a = (const line_t *)line_a;
+    const line_t *b = (const line_t *)line_b;
+    long line_a_index = (long)(a->length - 1), line_b_index = (long)(b->length - 1);
+    for ( ; line_a_index >= 0 && line_b_index >= 0; line_a_index--, line_b_index--) {
         while (line_a_index >= 0 && !isalpha(a->begin[line_a_index])) {
             line_a_index--;
         }
@@ -44,7 +43,7 @@ int ReversedComparison(void *line_a, void *line_b) {
         }
 
         char line_a_symbol = (char)tolower(a->begin[line_a_index]);
-        char line_b_symbol = tolower(b->begin[line_b_index]);
+        char line_b_symbol = (char)tolower(b->begin[line_b_index]);
 
         if (line_a_symbol < line_b_symbol) {
             return -1;
@@ -62,23 +61,23 @@ int ReversedComparison(void *line_a, void *line_b) {
     return 1;
 }
 
-int DirectComparison(void *line_a, void *line_b) {
-    line_t *a = (line_t *)line_a;
-    line_t *b = (line_t *)line_b;
+int DirectComparison(const void *line_a, const void *line_b) {
+    const line_t *a = (const line_t *)line_a;
+    const line_t *b = (const line_t *)line_b;
 
-    for (size_t line_a_index = 0, line_b_index = 0; line_a_index < a->length && line_b_index < b->length; line_a_index++; line_b_index++) {
+    for (size_t line_a_index = 0, line_b_index = 0; line_a_index < a->length && line_b_index < b->length; line_a_index++, line_b_index++) {
         while (line_a_index < a->length && !isalpha(a->begin[line_a_index])) {
             line_a_index++;
         }
-        while (line_b_index < b->length && !isalpha(line_b_index->begin[line_b_index])) {
+        while (line_b_index < b->length && !isalpha(b->begin[line_b_index])) {
             line_b_index++;
         }
         if (line_a_index >= a->length || line_b_index >= b->length) {
             break;
         }
 
-        char line_a_symbol = tolower(a->begin[line_a_index]);
-        char line_b_symbol = tolower(b->begin[line_b_index]);
+        char line_a_symbol = (char)tolower(a->begin[line_a_index]);
+        char line_b_symbol = (char)tolower(b->begin[line_b_index]);
 
         if (line_a_symbol < line_b_symbol) {
             return -1;
@@ -104,11 +103,12 @@ void SortAndFillOutputText(line_t *lines, size_t lines_count, char *text_buffer)
     assert(output != NULL);
 
     qsort(lines, lines_count, sizeof(line_t), DirectComparison);
-    WriteOutputText(lines, lines_count, output);
+    WritePointersArray(lines, lines_count, output);
 
     qsort(lines, lines_count, sizeof(line_t), ReversedComparison);
+    WritePointersArray(lines, lines_count, output);
 
-    WriteBufferIntoOutputText(text_buffer, lines_count, output);
+    WriteText(text_buffer, lines_count, output);
 
     fclose(output);
 }
@@ -147,14 +147,14 @@ void ConstructText(text_t *text) {
 
     GetFileLength(&(text->text_size), onegin);
 
-    text->text_buffer = (char*)calloc(text->text_size, sizeof(char)); // NOTE: free()
+    text->text_buffer = (char*)calloc(text->text_size, sizeof(char));
     assert(text->text_buffer != NULL);
 
     assert(fread(text->text_buffer, sizeof(char), text->text_size, onegin) == text->text_size);
 
     CountLinesReplaceBackspaces(text->text_buffer, &(text->lines_count));
 
-    text->lines = (line_t*)calloc(text->lines_count, sizeof(line_t)); // NOTE: free()
+    text->lines = (line_t*)calloc(text->lines_count, sizeof(line_t));
     assert(text->lines != NULL);
 
     FillLines(text->text_buffer, text->lines, text->lines_count);
@@ -162,11 +162,17 @@ void ConstructText(text_t *text) {
     fclose(onegin);
 }
 
-// void DestructText(text_t *text) {}
+void DestructText(text_t *text) {
+    free(text->text_buffer);
+    free(text->lines);
+    text->lines_count = 0;
+    text->text_size = 0;
+}
 
 int main() {
     text_t text = { .lines = NULL, .lines_count = 0, .text_size = 0, .text_buffer = NULL};
     ConstructText(&text);
     SortAndFillOutputText(text.lines, text.lines_count, text.text_buffer);
+    DestructText(&text);
     return 0;
 }
