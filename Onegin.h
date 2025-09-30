@@ -17,10 +17,14 @@ typedef struct {
     char *text_buffer;
 } text_t;
 
+void ConstructText(text_t *text);
+// void DestructText(text_t *text);
+
 void FillLines(char *text_buffer, line_t *lines, size_t lines_count);
 void CountLinesReplaceBackspaces(char *text_buffer, size_t *count);
 void GetFileLength(size_t *file_size, FILE *file);
-void ConstructText(text_t *text);
-// void DestructText(text_t *text);
+int DirectComparison();
+int ReversedComparison();
+void WriteOutputText(line_t *lines, size_t lines_count);
 
 #endif
